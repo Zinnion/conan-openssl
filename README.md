@@ -21,3 +21,4 @@
 | no_rc5      | False |  [True, False] |
 | no_rsa      | False |  [True, False] |
 | no_sha      | False |  [True, False] |
+| no_fpic      | False |  [True, False] |

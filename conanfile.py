@@ -33,12 +33,14 @@ class OpenSSLConan(ConanFile):
                "no_rc5": [True, False],
                "no_rsa": [True, False],
                "no_sha": [True, False],
-               "no_fpic": [True, False]}
+               "no_fpic": [True, False],
+               "no_async": [True, False],
+               "no_dso": [True, False]}
     default_options = "=False\n".join(options.keys()) + "=False"
 
     # When a new version is available they move the tar.gz to old/ location
     source_tgz = "https://www.openssl.org/source/openssl-%s.tar.gz" % version
-    source_tgz_old = "https://www.openssl.org/source/old/1.1.0/openssl-%s.tar.gz" % version
+    source_tgz_old = "https://www.openssl.org/source/openssl-%s.tar.gz" % version
 
     def build_requirements(self):
         # useful for example for conditional build_requires
@@ -155,6 +157,7 @@ class OpenSSLConan(ConanFile):
         elif self.settings.os == "Linux":
             target = {"x86": "linux-x86",
                       "x86_64": "linux-x86_64",
+                      "armv6": "linux-armv4",
                       "armv7": "linux-armv4",
                       "armv7hf": "linux-armv4",
                       "armv8": "linux-aarch64",
@@ -223,7 +226,7 @@ class OpenSSLConan(ConanFile):
         self._patch_makefile()
 
         self.output.warn("----------MAKE OPENSSL %s-------------" % self.version)
-        self.run_in_src("make", show_output=True, win_bash=win_bash)
+        self.run_in_src("make -j%s" % tools.cpu_count(), show_output=True, win_bash=win_bash)
 
     def ios_build(self):
         config_options_string = self._get_flags()
@@ -252,7 +255,7 @@ class OpenSSLConan(ConanFile):
         self.run_in_src(command)
         self._patch_install_name()
         self.output.warn("----------MAKE OPENSSL %s-------------" % self.version)
-        self.run_in_src("make")
+        self.run_in_src("make -j%s" % tools.cpu_count())
 
     def _patch_install_name(self):
         old_str = '-install_name $(INSTALLTOP)/$(LIBDIR)/'
